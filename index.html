@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Trastero - Gestor de Inventario</title>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --primary-hover: #1d4ed8;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-color: #1e293b;
+            --border-color: #cbd5e1;
+        }
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        h1 { margin: 0; font-size: 1.5rem; color: var(--primary-color); }
+        .btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+        .btn:hover { background-color: var(--primary-hover); }
+        .btn-danger { background-color: #dc2626; }
+        .btn-danger:hover { background-color: #b91c1c; }
+        
+        .search-bar {
+            width: 100%;
+            padding: 12px 16px;
+            font-size: 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-bottom: 24px;
+            box-sizing: border-box;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .card h3 { margin-top: 0; margin-bottom: 8px; color: #0f172a; }
+        .location { font-size: 0.85rem; color: #64748b; margin-bottom: 12px; font-weight: 500; }
+        .items-list {
+            background: #f1f5f9;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            margin-bottom: 12px;
+            max-height: 120px;
+            overflow-y: auto;
+        }
+        .items-list ul { margin: 0; padding-left: 20px; }
+        .card-img-link {
+            display: block;
+            margin-bottom: 12px;
+            color: var(--primary-color);
+            font-size: 0.85rem;
+            text-decoration: none;
+        }
+        .card-img-link:hover { text-decoration: underline; }
+        
+        .card-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .modal-content {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .form-group {
+            margin-bottom: 16px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 1rem;
+        }
+        .modal-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .btn-secondary {
+            background-color: #e2e8f0;
+            color: #334155;
+        }
+        .btn-secondary:hover { background-color: #cbd5e1; }
+        .empty-state {
+            text-align: center;
+            grid-column: 1 / -1;
+            padding: 40px;
+            color: #64748b;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>📦 Mi Trastero</h1>
+        <button class="btn" onclick="openModal()">+ Nueva Caja / Contenedor</button>
+    </header>
+
+    <input type="text" id="searchInput" class="search-bar" placeholder="Buscar objeto, caja o ubicación (ej. taladro, caja 2, balda...)" oninput="renderBoxes()">
+
+    <div id="boxesGrid" class="grid">
+        <!-- Las cajas se inyectarán aquí por JavaScript -->
+    </div>
+</div>
+
+<!-- Modal para Añadir/Editar Caja -->
+<div id="boxModal" class="modal">
+    <div class="modal-content">
+        <h2 id="modalTitle">Nueva Caja o Contenedor</h2>
+        <input type="hidden" id="boxId">
+        <div class="form-group">
+            <label for="boxName">Nombre o Número de Caja:</label>
+            <input type="text" id="boxName" placeholder="Ej. Caja 01 - Herramientas">
+        </div>
+        <div class="form-group">
+            <label for="boxLocation">Ubicación exacta:</label>
+            <input type="text" id="boxLocation" placeholder="Ej. Estantería Metálica, Balda Superior">
+        </div>
+        <div class="form-group">
+            <label for="boxItems">Objetos dentro (separados por comas o saltos de línea):</label>
+            <textarea id="boxItems" rows="4" placeholder="Ej. Taladro percutor, brocas, alargador, caja de tornillos..."></textarea>
+        </div>
+        <div class="form-group">
+            <label for="boxPhoto">Enlace a la foto (Google Photos, Drive, etc.):</label>
+            <input type="url" id="boxPhoto" placeholder="https://photos.app.goo.gl/...">
+        </div>
+        <div class="modal-buttons">
+            <button class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
+            <button class="btn" onclick="saveBox()">Guardar Caja</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Cargar datos guardados o inicializar con un par de ejemplos
+    let boxes = JSON.parse(localStorage.getItem('trastero_boxes')) || [
+        {
+            id: 1,
+            name: "Caja 01 - Herramientas",
+            location: "Estantería 1, Balda Baja",
+            items: "Taladro, juego de destornilladores, cinta americana, nivel",
+            photo: ""
+        },
+        {
+            id: 2,
+            name: "Caja 02 - Ropa de Invierno",
+            location: "Estantería 2, Balda Superior",
+            items: "Abrigos, bufandas, mantas polares",
+            photo: ""
+        }
+    ];
+
+    function saveToStorage() {
+        localStorage.setItem('trastero_boxes', JSON.stringify(boxes));
+    }
+
+    function renderBoxes() {
+        const searchQuery = document.getElementById('searchInput').value.toLowerCase();
+        const grid = document.getElementById('boxesGrid');
+        grid.innerHTML = '';
+
+        const filteredBoxes = boxes.filter(box => {
+            return box.name.toLowerCase().includes(searchQuery) ||
+                   box.location.toLowerCase().includes(searchQuery) ||
+                   box.items.toLowerCase().includes(searchQuery);
+        });
+
+        if (filteredBoxes.length === 0) {
+            grid.innerHTML = `<div class="empty-state">No se ha encontrado ninguna caja o artículo con ese criterio.</div>`;
+            return;
+        }
+
+        filteredBoxes.forEach(box => {
+            const itemsArray = box.items.split(/[\n,]+/).map(i => i.trim()).filter(i => i.length > 0);
+            const itemsHtml = itemsArray.map(item => `<li>${item}</li>`).join('');
+
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.innerHTML = `
+                <div>
+                    <h3>${box.name}</h3>
+                    <div class="location">📍 ${box.location}</div>
+                    <div class="items-list">
+                        <ul>${itemsHtml}</ul>
+                    </div>
+                    ${box.photo ? `<a href="${box.photo}" target="_blank" class="card-img-link">🖼️ Ver foto del interior / caja</a>` : ''}
+                </div>
+                <div class="card-actions">
+                    <button class="btn btn-secondary" onclick="editBox(${box.id})" style="padding: 6px 12px; font-size: 0.85rem;">Editar</button>
+                    <button class="btn btn-danger" onclick="deleteBox(${box.id})" style="padding: 6px 12px; font-size: 0.85rem;">Borrar</button>
+                </div>
+            `;
+            grid.appendChild(card);
+        });
+    }
+
+    function openModal(id = null) {
+        document.getElementById('boxModal').style.display = 'flex';
+        if (id) {
+            document.getElementById('modalTitle').innerText = 'Editar Caja';
+            const box = boxes.find(b => b.id === id);
+            document.getElementById('boxId').value = box.id;
+            document.getElementById('boxName').value = box.name;
+            document.getElementById('boxLocation').value = box.location;
+            document.getElementById('boxItems').value = box.items;
+            document.getElementById('boxPhoto').value = box.photo;
+        } else {
+            document.getElementById('modalTitle').innerText = 'Nueva Caja o Contenedor';
+            document.getElementById('boxId').value = '';
+            document.getElementById('boxName').value = '';
+            document.getElementById('boxLocation').value = '';
+            document.getElementById('boxItems').value = '';
+            document.getElementById('boxPhoto').value = '';
+        }
+    }
+
+    function closeModal() {
+        document.getElementById('boxModal').style.display = 'none';
+    }
+
+    function saveBox() {
+        const id = document.getElementById('boxId').value;
+        const name = document.getElementById('boxName').value.trim();
+        const location = document.getElementById('boxLocation').value.trim();
+        const items = document.getElementById('boxItems').value.trim();
+        const photo = document.getElementById('boxPhoto').value.trim();
+
+        if (!name) {
+            alert('Por favor, indica un nombre o número para la caja.');
+            return;
+        }
+
+        if (id) {
+            // Editar existente
+            const box = boxes.find(b => b.id == id);
+            box.name = name;
+            box.location = location;
+            box.items = items;
+            box.photo = photo;
+        } else {
+            // Crear nueva
+            const newBox = {
+                id: Date.now(),
+                name,
+                location,
+                items,
+                photo
+            };
+            boxes.push(newBox);
+        }
+
+        saveToStorage();
+        closeModal();
+        renderBoxes();
+    }
+
+    function editBox(id) {
+        openModal(id);
+    }
+
+    function deleteBox(id) {
+        if (confirm('¿Estás seguro de que quieres eliminar esta caja del inventario?')) {
+            boxes = boxes.filter(b => b.id !== id);
+            saveToStorage();
+            renderBoxes();
+        }
+    }
+
+    // Renderizar al cargar
+    renderBoxes();
+</script>
+
+</body>
+</html>
