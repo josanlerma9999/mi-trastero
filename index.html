@@ -27,7 +27,7 @@
             background-color: var(--bg-main);
             color: var(--text-white);
             margin: 0;
-            padding: 16px 16px 90px 16px;
+            padding: 16px 16px 95px 16px;
         }
 
         .container {
@@ -80,9 +80,9 @@
             cursor: pointer;
             transition: transform 0.2s, border-color 0.2s;
         }
-        .card-crystal:hover {
+        .card-crystal:active {
             border-color: var(--cyan-neon);
-            transform: translateY(-2px);
+            transform: scale(0.98);
         }
 
         .card-title {
@@ -191,8 +191,8 @@
             border-top: 1px solid rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(15px);
             display: flex;
-            justify-content: space-around;
-            padding: 10px 0 16px 0;
+            justify-content: space-between;
+            padding: 8px 6px 14px 6px;
             z-index: 100;
         }
         .nav-item {
@@ -200,18 +200,19 @@
             flex-direction: column;
             align-items: center;
             color: var(--text-muted);
-            font-size: 0.65rem;
+            font-size: 0.58rem;
             font-weight: 700;
             cursor: pointer;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.3px;
+            flex: 1;
         }
         .nav-item.active {
             color: var(--cyan-neon);
         }
         .nav-icon {
-            font-size: 1.3rem;
-            margin-bottom: 3px;
+            font-size: 1.2rem;
+            margin-bottom: 2px;
         }
 
         /* Modal dark */
@@ -268,7 +269,7 @@
             <h1 class="greeting">¡Buenas tardes! 📦</h1>
             <div class="status-badge">ESTADO: TRASTERO ORGANIZADO</div>
             <div class="brand">MI TRASTERO</div>
-            <div class="version">V1.1 CRYSTAL</div>
+            <div class="version">V1.4 CRYSTAL</div>
         </div>
         <div style="font-size: 1.5rem; cursor: pointer;" onclick="openModal()">➕</div>
     </div>
@@ -276,81 +277,110 @@
     <!-- ================= VISTA PRINCIPAL (DASHBOARD) ================= -->
     <div id="viewHome" class="view-section active-view">
         
-        <!-- Tarjeta Total -->
-        <div class="card-crystal" onclick="switchView('viewAll')">
+        <!-- Tarjeta Total -> Lleva a Todo el Inventario -->
+        <div class="card-crystal" onclick="switchView('viewAll', 'navHome')">
             <div class="card-title">TOTAL ELEMENTOS GUARDADOS</div>
             <div class="main-stat" id="totalCount">0 OBJETOS</div>
-            <div style="text-align:center; font-size:0.75rem; color:var(--cyan-neon); margin-top:4px;">Ver listado completo ➔</div>
+            <div style="text-align:center; font-size:0.75rem; color:var(--cyan-neon); margin-top:4px;">Toca para ver todo ➔</div>
         </div>
 
-        <!-- Tarjetas Duales (Cajas y Sueltos) -->
+        <!-- Tarjetas Duales -> Llevan a Cajas o Sueltos -->
         <div class="dual-stat-container">
-            <div class="card-crystal stat-half" onclick="switchView('viewBoxes')">
+            <div class="card-crystal stat-half" onclick="switchView('viewBoxes', 'navBoxes')">
                 <div class="card-title">CAJAS / BOLSAS</div>
                 <div class="stat-val-cyan" id="boxesCount">0 📦</div>
+                <div style="text-align:center; font-size:0.65rem; color:var(--cyan-neon); margin-top:4px;">Ver Cajas ➔</div>
             </div>
-            <div class="card-crystal stat-half" onclick="switchView('viewLoose')">
+            <div class="card-crystal stat-half" onclick="switchView('viewLoose', 'navLoose')">
                 <div class="card-title">OBJETOS SUELTOS</div>
                 <div class="stat-val-pink" id="sueltosCount">0 🏷️</div>
+                <div style="text-align:center; font-size:0.65rem; color:var(--pink-neon); margin-top:4px;">Ver Sueltos ➔</div>
             </div>
         </div>
 
-        <!-- Tarjeta de Acceso a Baldas -->
-        <div class="card-crystal" onclick="switchView('viewShelves')">
+        <!-- Tarjeta de Baldas -> Lleva a Estructura de Baldas -->
+        <div class="card-crystal" onclick="switchView('viewShelves', 'navShelves')">
             <div class="card-title">ESTRUCTURA FÍSICA</div>
             <div style="text-align:center; font-size:1.2rem; font-weight:800; margin-top:6px;">🪜 Ver por Baldas (1 a 5)</div>
-            <div style="text-align:center; font-size:0.75rem; color:var(--text-muted); margin-top:4px;">Organización de abajo hacia arriba</div>
+            <div style="text-align:center; font-size:0.75rem; color:var(--text-muted); margin-top:4px;">Toca para abrir mapa de baldas ➔</div>
         </div>
 
     </div>
 
     <!-- ================= VISTA: TODO EL INVENTARIO ================= -->
     <div id="viewAll" class="view-section">
-        <button class="back-btn" onclick="switchView('viewHome')">← Volver al Panel</button>
+        <button class="back-btn" onclick="switchView('viewHome', 'navHome')">← Volver al Panel</button>
         <div class="card-title" style="text-align:left; margin-bottom:14px;">📦 TODOS LOS ELEMENTOS</div>
         <div id="listAllContainer"></div>
     </div>
 
     <!-- ================= VISTA: CAJAS Y BOLSAS ================= -->
     <div id="viewBoxes" class="view-section">
-        <button class="back-btn" onclick="switchView('viewHome')">← Volver al Panel</button>
+        <button class="back-btn" onclick="switchView('viewHome', 'navHome')">← Volver al Panel</button>
         <div class="card-title" style="text-align:left; margin-bottom:14px;">📦 CAJAS Y BOLSAS</div>
         <div id="listboxesContainer"></div>
     </div>
 
     <!-- ================= VISTA: OBJETOS SUELTOS ================= -->
     <div id="viewLoose" class="view-section">
-        <button class="back-btn" onclick="switchView('viewHome')">← Volver al Panel</button>
+        <button class="back-btn" onclick="switchView('viewHome', 'navHome')">← Volver al Panel</button>
         <div class="card-title" style="text-align:left; margin-bottom:14px;">🏷️ OBJETOS SUELTOS</div>
         <div id="listLooseContainer"></div>
     </div>
 
-    <!-- ================= VISTA: POR BALDAS (1 a 5 + Bolsas + Suelo) ================= -->
+    <!-- ================= VISTA: POR BALDAS ================= -->
     <div id="viewShelves" class="view-section">
-        <button class="back-btn" onclick="switchView('viewHome')">← Volver al Panel</button>
+        <button class="back-btn" onclick="switchView('viewHome', 'navHome')">← Volver al Panel</button>
         <div class="card-title" style="text-align:left; margin-bottom:14px;">🪜 DISTRIBUCIÓN POR BALDAS</div>
         <div id="shelvesListContainer"></div>
+    </div>
+
+    <!-- ================= VISTA: NOTAS Y AVISOS ================= -->
+    <div id="viewNotes" class="view-section">
+        <button class="back-btn" onclick="switchView('viewHome', 'navHome')">← Volver al Panel</button>
+        <div class="card-title" style="text-align:left; margin-bottom:14px;">📰 NOTAS Y AVISOS</div>
+        
+        <div class="item-card">
+            <div class="item-header">
+                <span class="item-title" style="color:var(--yellow-neon);">⚡ Situación y Apuntes</span>
+                <span class="badge-loc">⚠️ Aviso</span>
+            </div>
+            <div class="item-items" style="line-height: 1.5; color: var(--text-white);">
+                • Dejando varios enteros a oscuras.<br>
+                • Se le pide a Trump que elija el lado bueno en medio de tensiones.<br>
+                • Se asegura sentirse traicionado por los acontecimientos recientes.<br>
+                • Cualquier objeto suelto pendiente de catalogar.
+            </div>
+        </div>
     </div>
 
 </div>
 
 <!-- Bottom Navbar -->
 <div class="navbar">
-    <div class="nav-item active" id="navHome" onclick="switchView('viewHome')">
+    <div class="nav-item active" id="navHome" onclick="switchView('viewHome', 'navHome')">
         <div class="nav-icon">🏠</div>
         <span>INICIO</span>
     </div>
-    <div class="nav-item" id="navShelves" onclick="switchView('viewShelves')">
+    <div class="nav-item" id="navShelves" onclick="switchView('viewShelves', 'navShelves')">
         <div class="nav-icon">🪜</div>
         <span>BALDAS</span>
+    </div>
+    <div class="nav-item" id="navBoxes" onclick="switchView('viewBoxes', 'navBoxes')">
+        <div class="nav-icon">📦</div>
+        <span>CAJAS</span>
+    </div>
+    <div class="nav-item" id="navLoose" onclick="switchView('viewLoose', 'navLoose')">
+        <div class="nav-icon">🏷️</div>
+        <span>SUELTOS</span>
+    </div>
+    <div class="nav-item" id="navNotes" onclick="switchView('viewNotes', 'navNotes')">
+        <div class="nav-icon">📰</div>
+        <span>AVISOS</span>
     </div>
     <div class="nav-item" onclick="openModal()">
         <div class="nav-icon">➕</div>
         <span>AÑADIR</span>
-    </div>
-    <div class="nav-item" onclick="exportData()">
-        <div class="nav-icon">💾</div>
-        <span>COPIA</span>
     </div>
 </div>
 
@@ -404,9 +434,16 @@
         "Suelo / Hueco"
     ];
 
-    function switchView(viewId) {
+    function switchView(viewId, navId = null) {
         document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active-view'));
         document.getElementById(viewId).classList.add('active-view');
+        
+        if (navId) {
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            const activeNav = document.getElementById(navId);
+            if(activeNav) activeNav.classList.add('active');
+        }
+
         window.scrollTo({ top: 0, behavior: 'smooth' });
         renderAllViews();
     }
@@ -420,13 +457,9 @@
         document.getElementById('boxesCount').innerText = `${boxes.length} 📦`;
         document.getElementById('sueltosCount').innerText = `${loose.length} 🏷️`;
 
-        // Render Todo
         renderList('listAllContainer', inventory);
-        // Render Cajas
         renderList('listboxesContainer', boxes);
-        // Render Sueltos
         renderList('listLooseContainer', loose);
-        // Render Baldas
         renderShelvesView();
     }
 
@@ -494,16 +527,6 @@
             document.getElementById('inputName').value = '';
             document.getElementById('inputItems').value = '';
         }
-    }
-
-    function exportData() {
-        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(inventory));
-        const anchor = document.createElement('a');
-        anchor.setAttribute("href", dataStr);
-        anchor.setAttribute("download", "trastero_backup.json");
-        document.body.appendChild(anchor);
-        anchor.click();
-        anchor.remove();
     }
 
     renderAllViews();
