@@ -310,10 +310,10 @@
     <!-- Top Header Común -->
     <div class="header-top">
         <div>
-            <h1 class="greeting">¡Buenas tardes! 📦</h1>
+            <h1 class="greeting" id="timeGreeting">¡Buenas noches! 🌙</h1>
             <div class="status-badge">ESTADO: TRASTERO ORGANIZADO</div>
             <div class="brand">MI TRASTERO</div>
-            <div class="version">V1.7 CRYSTAL BACKUP</div>
+            <div class="version">V1.8 CRYSTAL AUTO-TIME</div>
         </div>
         <div class="header-actions">
             <div style="font-size: 1.4rem; cursor: pointer;" title="Descargar Copia de Seguridad" onclick="exportData()">💾</div>
@@ -506,6 +506,19 @@
         "Bolsas Colgadas",
         "Suelo / Hueco"
     ];
+
+    function updateGreeting() {
+        const hour = new Date().getHours();
+        const greetingEl = document.getElementById('timeGreeting');
+        
+        if (hour >= 6 && hour < 13) {
+            greetingEl.innerText = "¡Buenos días! ☕";
+        } else if (hour >= 13 && hour < 21) {
+            greetingEl.innerText = "¡Buenas tardes! ☀️";
+        } else {
+            greetingEl.innerText = "¡Buenas noches! 🌙";
+        }
+    }
 
     function switchView(viewId, navId = null) {
         document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active-view'));
@@ -774,6 +787,7 @@
         input.click();
     }
 
+    updateGreeting();
     renderAllViews();
 </script>
 
