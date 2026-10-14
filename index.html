@@ -13,6 +13,7 @@
             --pink-neon: #ec4899;
             --yellow-neon: #facc15;
             --purple-neon: #a855f7;
+            --red-neon: #f43f5e;
             --text-white: #f8fafc;
             --text-muted: #94a3b8;
         }
@@ -126,7 +127,7 @@
             text-align: center;
         }
 
-        /* Vistas / Páginas secundarias (Ocultas por defecto) */
+        /* Vistas / Páginas secundarias */
         .view-section {
             display: none;
         }
@@ -180,6 +181,29 @@
             color: var(--text-muted);
             margin-top: 6px;
         }
+        .item-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            margin-top: 10px;
+            padding-top: 8px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .btn-sm {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .btn-sm-del {
+            background: rgba(244, 63, 94, 0.15);
+            color: var(--red-neon);
+            border-color: rgba(244, 63, 94, 0.3);
+        }
 
         /* Bottom Nav Bar */
         .navbar {
@@ -220,7 +244,7 @@
             display: none;
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8);
+            background: rgba(0,0,0,0.85);
             justify-content: center;
             align-items: center;
             padding: 16px;
@@ -269,22 +293,22 @@
             <h1 class="greeting">¡Buenas tardes! 📦</h1>
             <div class="status-badge">ESTADO: TRASTERO ORGANIZADO</div>
             <div class="brand">MI TRASTERO</div>
-            <div class="version">V1.4 CRYSTAL</div>
+            <div class="version">V1.5 CRYSTAL EDITABLE</div>
         </div>
-        <div style="font-size: 1.5rem; cursor: pointer;" onclick="openModal()">➕</div>
+        <div style="font-size: 1.5rem; cursor: pointer;" onclick="openItemModal()">➕</div>
     </div>
 
     <!-- ================= VISTA PRINCIPAL (DASHBOARD) ================= -->
     <div id="viewHome" class="view-section active-view">
         
-        <!-- Tarjeta Total -> Lleva a Todo el Inventario -->
+        <!-- Tarjeta Total -->
         <div class="card-crystal" onclick="switchView('viewAll', 'navHome')">
             <div class="card-title">TOTAL ELEMENTOS GUARDADOS</div>
             <div class="main-stat" id="totalCount">0 OBJETOS</div>
             <div style="text-align:center; font-size:0.75rem; color:var(--cyan-neon); margin-top:4px;">Toca para ver todo ➔</div>
         </div>
 
-        <!-- Tarjetas Duales -> Llevan a Cajas o Sueltos -->
+        <!-- Tarjetas Duales -->
         <div class="dual-stat-container">
             <div class="card-crystal stat-half" onclick="switchView('viewBoxes', 'navBoxes')">
                 <div class="card-title">CAJAS / BOLSAS</div>
@@ -298,7 +322,7 @@
             </div>
         </div>
 
-        <!-- Tarjeta de Baldas -> Lleva a Estructura de Baldas -->
+        <!-- Tarjeta de Baldas -->
         <div class="card-crystal" onclick="switchView('viewShelves', 'navShelves')">
             <div class="card-title">ESTRUCTURA FÍSICA</div>
             <div style="text-align:center; font-size:1.2rem; font-weight:800; margin-top:6px;">🪜 Ver por Baldas (1 a 5)</div>
@@ -335,23 +359,14 @@
         <div id="shelvesListContainer"></div>
     </div>
 
-    <!-- ================= VISTA: NOTAS Y AVISOS ================= -->
+    <!-- ================= VISTA: NOTAS Y AVISOS EDITABLES ================= -->
     <div id="viewNotes" class="view-section">
         <button class="back-btn" onclick="switchView('viewHome', 'navHome')">← Volver al Panel</button>
-        <div class="card-title" style="text-align:left; margin-bottom:14px;">📰 NOTAS Y AVISOS</div>
-        
-        <div class="item-card">
-            <div class="item-header">
-                <span class="item-title" style="color:var(--yellow-neon);">⚡ Situación y Apuntes</span>
-                <span class="badge-loc">⚠️ Aviso</span>
-            </div>
-            <div class="item-items" style="line-height: 1.5; color: var(--text-white);">
-                • Dejando varios enteros a oscuras.<br>
-                • Se le pide a Trump que elija el lado bueno en medio de tensiones.<br>
-                • Se asegura sentirse traicionado por los acontecimientos recientes.<br>
-                • Cualquier objeto suelto pendiente de catalogar.
-            </div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+            <div class="card-title" style="text-align:left; margin:0;">📰 NOTAS Y AVISOS</div>
+            <button class="btn-sm" style="background:var(--cyan-neon); color:black;" onclick="openNoteModal()">+ Nueva Nota</button>
         </div>
+        <div id="notesContainer"></div>
     </div>
 
 </div>
@@ -378,16 +393,17 @@
         <div class="nav-icon">📰</div>
         <span>AVISOS</span>
     </div>
-    <div class="nav-item" onclick="openModal()">
+    <div class="nav-item" onclick="openItemModal()">
         <div class="nav-icon">➕</div>
         <span>AÑADIR</span>
     </div>
 </div>
 
-<!-- Modal Dark -->
-<div id="addModal" class="modal">
+<!-- Modal Elementos (Añadir / Editar) -->
+<div id="itemModal" class="modal">
     <div class="modal-content">
-        <h3 style="margin-top:0; color:var(--cyan-neon);">Añadir al Trastero</h3>
+        <h3 id="modalTitle" style="margin-top:0; color:var(--cyan-neon);">Añadir al Trastero</h3>
+        <input type="hidden" id="editItemId">
         
         <label style="font-size:0.8rem;">Tipo de elemento:</label>
         <select id="inputType" class="form-control">
@@ -412,16 +428,36 @@
         <label style="font-size:0.8rem;">Contenido / Detalle:</label>
         <input type="text" id="inputItems" class="form-control" placeholder="Ej. Taladro, brocas, martillo">
 
-        <button class="btn-action" onclick="saveItem()">GUARDAR EN TRASTERO</button>
-        <button style="width:100%; background:transparent; border:none; color:var(--text-muted); margin-top:10px; cursor:pointer;" onclick="closeModal()">Cancelar</button>
+        <button class="btn-action" onclick="saveItem()">GUARDAR</button>
+        <button style="width:100%; background:transparent; border:none; color:var(--text-muted); margin-top:10px; cursor:pointer;" onclick="closeModal('itemModal')">Cancelar</button>
+    </div>
+</div>
+
+<!-- Modal Notas (Añadir / Editar) -->
+<div id="noteModal" class="modal">
+    <div class="modal-content">
+        <h3 id="noteModalTitle" style="margin-top:0; color:var(--yellow-neon);">Aviso / Nota</h3>
+        <input type="hidden" id="editNoteId">
+        
+        <label style="font-size:0.8rem;">Título de la Nota:</label>
+        <input type="text" id="noteTitle" class="form-control" placeholder="Ej. Recordatorio de compras">
+
+        <label style="font-size:0.8rem;">Contenido del Aviso / Nota:</label>
+        <textarea id="noteContent" class="form-control" rows="4" placeholder="Escribe tu nota aquí..."></textarea>
+
+        <button class="btn-action" style="background:linear-gradient(90deg, var(--yellow-neon), #d97706); color:black;" onclick="saveNote()">GUARDAR NOTA</button>
+        <button style="width:100%; background:transparent; border:none; color:var(--text-muted); margin-top:10px; cursor:pointer;" onclick="closeModal('noteModal')">Cancelar</button>
     </div>
 </div>
 
 <script>
-    let inventory = JSON.parse(localStorage.getItem('trastero_crystal_dashboard')) || [
-        { type: "Caja / Bolsa", name: "Caja Herramientas", loc: "Balda 3", items: "Taladro, brocas, martillo" },
-        { type: "Objeto Suelto", name: "Aspirador de mano", loc: "Balda 2", items: "Cargador y boquillas" },
-        { type: "Caja / Bolsa", name: "Bolsa Ropa Nieve", loc: "Bolsas Colgadas", items: "Chaquetón y guantes" }
+    let inventory = JSON.parse(localStorage.getItem('trastero_inventory_v2')) || [
+        { id: 1, type: "Caja / Bolsa", name: "Caja Herramientas", loc: "Balda 3", items: "Taladro, brocas, martillo" },
+        { id: 2, type: "Objeto Suelto", name: "Aspirador de mano", loc: "Balda 2", items: "Cargador y boquillas" }
+    ];
+
+    let notes = JSON.parse(localStorage.getItem('trastero_notes_v2')) || [
+        { id: 1, title: "⚡ Nota de recordatorio", content: "Pendiente revisar cajas de Navidad en la Balda 5." }
     ];
 
     const zones = [
@@ -461,6 +497,7 @@
         renderList('listboxesContainer', boxes);
         renderList('listLooseContainer', loose);
         renderShelvesView();
+        renderNotesView();
     }
 
     function renderList(containerId, itemsArray) {
@@ -481,6 +518,10 @@
                     <span class="badge-loc">📍 ${item.loc}</span>
                 </div>
                 <div class="item-items">${item.items || 'Sin detalles'}</div>
+                <div class="item-actions">
+                    <button class="btn-sm" onclick="editItem(${item.id})">✏️ Editar</button>
+                    <button class="btn-sm btn-sm-del" onclick="deleteItem(${item.id})">🗑️ Borrar</button>
+                </div>
             `;
             container.appendChild(card);
         });
@@ -497,7 +538,11 @@
             
             let itemsHtml = zoneItems.length === 0 
                 ? `<div style="color:var(--text-muted); font-size:0.75rem;">Vacía</div>` 
-                : zoneItems.map(i => `<div style="font-size:0.85rem; margin-top:4px;">• <b>${i.name}</b> (${i.items || ''})</div>`).join('');
+                : zoneItems.map(i => `
+                    <div style="display:flex; justify-namespace:space-between; align-items:center; margin-top:6px; font-size:0.85rem;">
+                        <span>• <b>${i.name}</b> (${i.items || ''})</span>
+                        <span style="font-size:0.7rem; color:var(--cyan-neon); cursor:pointer;" onclick="editItem(${i.id})">✏️</span>
+                    </div>`).join('');
 
             shelfDiv.innerHTML = `
                 <div class="item-header">
@@ -510,22 +555,133 @@
         });
     }
 
-    function openModal() { document.getElementById('addModal').style.display = 'flex'; }
-    function closeModal() { document.getElementById('addModal').style.display = 'none'; }
+    function renderNotesView() {
+        const container = document.getElementById('notesContainer');
+        container.innerHTML = '';
+
+        if(notes.length === 0) {
+            container.innerHTML = `<div style="color:var(--text-muted); font-size:0.85rem; text-align:center; padding:20px;">No tienes notas o avisos guardados.</div>`;
+            return;
+        }
+
+        notes.forEach(note => {
+            const card = document.createElement('div');
+            card.className = 'item-card';
+            card.innerHTML = `
+                <div class="item-header">
+                    <span class="item-title" style="color:var(--yellow-neon);">${note.title}</span>
+                </div>
+                <div class="item-items" style="line-height: 1.4; color: var(--text-white); white-space: pre-wrap;">${note.content}</div>
+                <div class="item-actions">
+                    <button class="btn-sm" onclick="editNote(${note.id})">✏️ Editar</button>
+                    <button class="btn-sm btn-sm-del" onclick="deleteNote(${note.id})">🗑️ Borrar</button>
+                </div>
+            `;
+            container.appendChild(card);
+        });
+    }
+
+    /* Modal Elementos */
+    function openItemModal(id = null) {
+        document.getElementById('itemModal').style.display = 'flex';
+        if (id) {
+            const item = inventory.find(i => i.id === id);
+            document.getElementById('modalTitle').innerText = 'Editar Elemento';
+            document.getElementById('editItemId').value = item.id;
+            document.getElementById('inputType').value = item.type;
+            document.getElementById('inputLoc').value = item.loc;
+            document.getElementById('inputName').value = item.name;
+            document.getElementById('inputItems').value = item.items;
+        } else {
+            document.getElementById('modalTitle').innerText = 'Añadir al Trastero';
+            document.getElementById('editItemId').value = '';
+            document.getElementById('inputName').value = '';
+            document.getElementById('inputItems').value = '';
+        }
+    }
+
+    /* Modal Notas */
+    function openNoteModal(id = null) {
+        document.getElementById('noteModal').style.display = 'flex';
+        if (id) {
+            const note = notes.find(n => n.id === id);
+            document.getElementById('noteModalTitle').innerText = 'Editar Nota';
+            document.getElementById('editNoteId').value = note.id;
+            document.getElementById('noteTitle').value = note.title;
+            document.getElementById('noteContent').value = note.content;
+        } else {
+            document.getElementById('noteModalTitle').innerText = 'Nueva Nota';
+            document.getElementById('editNoteId').value = '';
+            document.getElementById('noteTitle').value = '';
+            document.getElementById('noteContent').value = '';
+        }
+    }
+
+    function closeModal(modalId) {
+        document.getElementById(modalId).style.display = 'none';
+    }
 
     function saveItem() {
+        const id = document.getElementById('editItemId').value;
         const type = document.getElementById('inputType').value;
         const loc = document.getElementById('inputLoc').value;
         const name = document.getElementById('inputName').value.trim();
         const items = document.getElementById('inputItems').value.trim();
 
-        if(name) {
-            inventory.unshift({ type, name, loc, items });
-            localStorage.setItem('trastero_crystal_dashboard', JSON.stringify(inventory));
+        if(!name) return alert('Pon un nombre al elemento.');
+
+        if(id) {
+            const item = inventory.find(i => i.id == id);
+            item.type = type;
+            item.loc = loc;
+            item.name = name;
+            item.items = items;
+        } else {
+            inventory.unshift({ id: Date.now(), type, loc, name, items });
+        }
+
+        localStorage.setItem('trastero_inventory_v2', JSON.stringify(inventory));
+        renderAllViews();
+        closeModal('itemModal');
+    }
+
+    function editItem(id) { openItemModal(id); }
+
+    function deleteItem(id) {
+        if(confirm('¿Seguro que quieres borrar este elemento?')) {
+            inventory = inventory.filter(i => i.id !== id);
+            localStorage.setItem('trastero_inventory_v2', JSON.stringify(inventory));
             renderAllViews();
-            closeModal();
-            document.getElementById('inputName').value = '';
-            document.getElementById('inputItems').value = '';
+        }
+    }
+
+    function saveNote() {
+        const id = document.getElementById('editNoteId').value;
+        const title = document.getElementById('noteTitle').value.trim();
+        const content = document.getElementById('noteContent').value.trim();
+
+        if(!title) return alert('Pon un título a la nota.');
+
+        if(id) {
+            const note = notes.find(n => n.id == id);
+            note.title = title;
+            note.content = content;
+        } else {
+            notes.unshift({ id: Date.now(), title, content });
+        }
+
+        localStorage.setItem('trastero_notes_v2', JSON.stringify(notes));
+        renderAllViews();
+        closeModal('noteModal');
+    }
+
+    function editNote(id) { openNoteModal(id); }
+
+    function deleteNote(id) {
+        if(confirm('¿Seguro que quieres borrar esta nota?')) {
+            notes = notes.filter(n => n.id !== id);
+            localStorage.setItem('trastero_notes_v2', JSON.stringify(notes));
+            renderAllViews();
         }
     }
 
