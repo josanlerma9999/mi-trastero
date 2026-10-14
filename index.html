@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Trastero V1.1 Crystal - Baldas</title>
+    <title>Mi Trastero - Crystal Dashboard</title>
     <style>
         :root {
             --bg-main: #030712;
@@ -13,7 +13,6 @@
             --pink-neon: #ec4899;
             --yellow-neon: #facc15;
             --purple-neon: #a855f7;
-            --green-neon: #22c55e;
             --text-white: #f8fafc;
             --text-muted: #94a3b8;
         }
@@ -28,7 +27,7 @@
             background-color: var(--bg-main);
             color: var(--text-white);
             margin: 0;
-            padding: 16px 16px 90px 16px;
+            padding: 16px 16px 40px 16px;
         }
 
         .container {
@@ -122,23 +121,51 @@
             color: var(--pink-neon);
         }
 
-        /* Tarjetas de Baldas / Zonas Específicas */
+        /* Tarjeta de Acciones / Menú Central */
+        .actions-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .action-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 14px;
+            border-radius: 14px;
+            color: white;
+            font-weight: 700;
+            font-size: 0.85rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .action-btn:hover {
+            background: rgba(56, 189, 248, 0.1);
+            border-color: var(--cyan-neon);
+        }
+        .action-icon {
+            font-size: 1.5rem;
+        }
+
+        /* Tarjetas de Baldas / Zonas Desplegables */
         .shelf-card {
             background: rgba(15, 23, 42, 0.9);
             border: 1px solid rgba(56, 189, 248, 0.15);
             border-radius: 16px;
             padding: 16px;
-            margin-bottom: 14px;
-            transition: all 0.2s ease;
+            margin-bottom: 12px;
         }
         .shelf-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 10px;
         }
         .shelf-title {
-            font-size: 1rem;
+            font-size: 0.95rem;
             font-weight: 800;
             color: var(--text-white);
             display: flex;
@@ -156,7 +183,7 @@
         .shelf-items-list {
             list-style: none;
             padding: 0;
-            margin: 8px 0 0 0;
+            margin: 10px 0 0 0;
         }
         .shelf-item-row {
             display: flex;
@@ -176,39 +203,6 @@
         }
         .tag-caja { background: rgba(168, 85, 247, 0.2); color: var(--purple-neon); }
         .tag-suelto { background: rgba(250, 204, 21, 0.2); color: var(--yellow-neon); }
-
-        /* Navigation Bar */
-        .navbar {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: rgba(3, 7, 18, 0.95);
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(15px);
-            display: flex;
-            justify-content: space-around;
-            padding: 10px 0 16px 0;
-            z-index: 100;
-        }
-        .nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            color: var(--text-muted);
-            font-size: 0.65rem;
-            font-weight: 700;
-            cursor: pointer;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        .nav-item.active {
-            color: var(--cyan-neon);
-        }
-        .nav-icon {
-            font-size: 1.3rem;
-            margin-bottom: 3px;
-        }
 
         /* Modal dark */
         .modal {
@@ -257,11 +251,8 @@
             letter-spacing: 1px;
             color: var(--text-muted);
             font-weight: 800;
-            margin: 24px 0 12px 0;
+            margin: 20px 0 10px 0;
             text-transform: uppercase;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
         }
     </style>
 </head>
@@ -275,7 +266,7 @@
             <h1 class="greeting">¡Buenas tardes! 📦</h1>
             <div class="status-badge">ESTADO: TRASTERO ORGANIZADO</div>
             <div class="brand">MI TRASTERO</div>
-            <div class="version">V1.1 CRYSTAL</div>
+            <div class="version">V1.2 CRYSTAL</div>
         </div>
         <div style="font-size: 1.5rem; cursor: pointer;" onclick="openModal()">➕</div>
     </div>
@@ -298,36 +289,35 @@
         </div>
     </div>
 
-    <!-- Sección de Tarjetas Detalladas por Balda / Zona -->
-    <div class="section-title">
-        <span>DESGLOSE POR BALDAS Y ZONAS</span>
-        <span style="color:var(--cyan-neon); font-size:0.7rem;">7 ZONAS</span>
+    <!-- Tarjeta de Control y Menú (Acciones en tarjeta separada) -->
+    <div class="card-crystal">
+        <div class="card-title">PANEL DE ACCIONES Y ZONAS</div>
+        <div class="actions-grid">
+            <button class="action-btn" onclick="openModal()">
+                <span class="action-icon">➕</span>
+                <span>Añadir Objeto</span>
+            </button>
+            <button class="action-btn" onclick="toggleShelvesView()">
+                <span class="action-icon">🪜</span>
+                <span>Ver Baldas</span>
+            </button>
+            <button class="action-btn" onclick="exportBackup()">
+                <span class="action-icon">💾</span>
+                <span>Guardar Copia</span>
+            </button>
+            <button class="action-btn" onclick="importBackup()">
+                <span class="action-icon">📂</span>
+                <span>Cargar Copia</span>
+            </button>
+        </div>
     </div>
 
-    <div id="shelvesContainer">
-        <!-- Las 7 tarjetas se ordenan ahora desde Balda 1 (Inferior) hacia arriba -->
+    <!-- Sección Desplegable de Baldas -->
+    <div id="shelvesSection" style="display:none;">
+        <div class="section-title">DESGLOSE FÍSICO (DE ABAJO A ARRIBA)</div>
+        <div id="shelvesContainer"></div>
     </div>
 
-</div>
-
-<!-- Bottom Navbar -->
-<div class="navbar">
-    <div class="nav-item active" onclick="scrollToTop()">
-        <div class="nav-icon">🏠</div>
-        <span>INICIO</span>
-    </div>
-    <div class="nav-item" onclick="scrollToShelves()">
-        <div class="nav-icon">🪜</div>
-        <span>BALDAS</span>
-    </div>
-    <div class="nav-item" onclick="openModal()">
-        <div class="nav-icon">➕</div>
-        <span>AÑADIR</span>
-    </div>
-    <div class="nav-item" onclick="exportBackup()">
-        <div class="nav-icon">💾</div>
-        <span>COPIA</span>
-    </div>
 </div>
 
 <!-- Modal Añadir -->
@@ -343,7 +333,7 @@
 
         <label style="font-size:0.8rem;">Ubicación exacta:</label>
         <select id="inputLoc" class="form-control">
-            <option value="Balda 1 (Inferior)">Balda 1 (Inferior)</option>
+            <option value="Balda 1 (Inferior)">Balda 1 (Inferior - Suelo)</option>
             <option value="Balda 2">Balda 2</option>
             <option value="Balda 3">Balda 3</option>
             <option value="Balda 4">Balda 4</option>
@@ -364,7 +354,6 @@
 </div>
 
 <script>
-    // Zonas ordenadas desde abajo (Balda 1) hacia arriba (Balda 5)
     const zones = [
         "Balda 1 (Inferior)",
         "Balda 2",
@@ -375,11 +364,10 @@
         "Suelo / Hueco"
     ];
 
-    let inventory = JSON.parse(localStorage.getItem('trastero_crystal_v1')) || [
+    let inventory = JSON.parse(localStorage.getItem('trastero_crystal_v2')) || [
         { type: "Caja / Bolsa", name: "Caja Herramientas", loc: "Balda 3", items: "Taladro, brocas, martillo" },
         { type: "Objeto Suelto", name: "Aspirador de mano", loc: "Balda 2", items: "Cargador y boquillas" },
-        { type: "Caja / Bolsa", name: "Bolsa Ropa Nieve", loc: "Bolsas Colgadas", items: "Chaquetón y guantes" },
-        { type: "Objeto Suelto", name: "Bote Pintura Blanca", loc: "Suelo / Hueco", items: "Pintura plástica 5L" }
+        { type: "Caja / Bolsa", name: "Bolsa Ropa Nieve", loc: "Bolsas Colgadas", items: "Chaquetón y guantes" }
     ];
 
     function render() {
@@ -402,18 +390,18 @@
             
             let itemsHtml = '';
             if (zoneItems.length === 0) {
-                itemsHtml = `<div style="font-size:0.8rem; color:var(--text-muted); padding:6px 0;">Vacía (sin objetos registrados)</div>`;
+                itemsHtml = `<div style="font-size:0.75rem; color:var(--text-muted); padding:4px 0;">Vacía</div>`;
             } else {
-                zoneItems.forEach((item, index) => {
+                zoneItems.forEach((item) => {
                     const isCaja = item.type === 'Caja / Bolsa';
                     itemsHtml += `
                         <div class="shelf-item-row">
                             <div>
                                 <strong style="color:var(--text-white);">${item.name}</strong>
-                                <div style="font-size:0.75rem; color:var(--text-muted);">${item.items || 'Sin detalle'}</div>
+                                <div style="font-size:0.7rem; color:var(--text-muted);">${item.items || ''}</div>
                             </div>
                             <span class="item-type-tag ${isCaja ? 'tag-caja' : 'tag-suelto'}">
-                                ${isCaja ? '📦 Caja' : '🏷️ Suelto'}
+                                ${isCaja ? '📦' : '🏷️'}
                             </span>
                         </div>
                     `;
@@ -422,14 +410,10 @@
 
             shelfCard.innerHTML = `
                 <div class="shelf-header">
-                    <div class="shelf-title">
-                        <span>🪜</span> ${zone}
-                    </div>
-                    <span class="shelf-badge">${zoneItems.length} Elementos</span>
+                    <div class="shelf-title">🪜 ${zone}</div>
+                    <span class="shelf-badge">${zoneItems.length}</span>
                 </div>
-                <div class="shelf-items-list">
-                    ${itemsHtml}
-                </div>
+                <div class="shelf-items-list">${itemsHtml}</div>
             `;
             container.appendChild(shelfCard);
         });
@@ -437,6 +421,16 @@
 
     function openModal() { document.getElementById('addModal').style.display = 'flex'; }
     function closeModal() { document.getElementById('addModal').style.display = 'none'; }
+
+    function toggleShelvesView() {
+        const section = document.getElementById('shelvesSection');
+        if (section.style.display === 'none') {
+            section.style.display = 'block';
+            section.scrollIntoView({ behavior: 'smooth' });
+        } else {
+            section.style.display = 'none';
+        }
+    }
 
     function saveItem() {
         const type = document.getElementById('inputType').value;
@@ -446,20 +440,12 @@
 
         if(name) {
             inventory.unshift({ type, name, loc, items });
-            localStorage.setItem('trastero_crystal_v1', JSON.stringify(inventory));
+            localStorage.setItem('trastero_crystal_v2', JSON.stringify(inventory));
             render();
             closeModal();
             document.getElementById('inputName').value = '';
             document.getElementById('inputItems').value = '';
         }
-    }
-
-    function scrollToShelves() {
-        document.getElementById('shelvesContainer').scrollIntoView({ behavior: 'smooth' });
-    }
-
-    function scrollToTop() {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     function exportBackup() {
@@ -470,6 +456,24 @@
         document.body.appendChild(anchor);
         anchor.click();
         anchor.remove();
+    }
+
+    function importBackup() {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'application/json';
+        input.onchange = e => {
+            const file = e.target.files[0];
+            const reader = new FileReader();
+            reader.readAsText(file, 'UTF-8');
+            reader.onload = readerEvent => {
+                inventory = JSON.parse(readerEvent.target.result);
+                localStorage.setItem('trastero_crystal_v2', JSON.stringify(inventory));
+                render();
+                alert('¡Copia cargada con éxito!');
+            }
+        }
+        input.click();
     }
 
     render();
