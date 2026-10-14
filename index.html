@@ -69,6 +69,12 @@
             letter-spacing: 1px;
         }
 
+        .header-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
         /* Card Crystal Styles */
         .card-crystal {
             background: rgba(15, 23, 42, 0.85);
@@ -205,8 +211,8 @@
             background: rgba(255, 255, 255, 0.08);
             border: 1px solid rgba(255, 255, 255, 0.1);
             color: white;
-            padding: 4px 10px;
-            border-radius: 6px;
+            padding: 6px 12px;
+            border-radius: 8px;
             font-size: 0.75rem;
             cursor: pointer;
             font-weight: 600;
@@ -307,9 +313,12 @@
             <h1 class="greeting">¡Buenas tardes! 📦</h1>
             <div class="status-badge">ESTADO: TRASTERO ORGANIZADO</div>
             <div class="brand">MI TRASTERO</div>
-            <div class="version">V1.6 CRYSTAL FOTOS</div>
+            <div class="version">V1.7 CRYSTAL BACKUP</div>
         </div>
-        <div style="font-size: 1.5rem; cursor: pointer;" onclick="openItemModal()">➕</div>
+        <div class="header-actions">
+            <div style="font-size: 1.4rem; cursor: pointer;" title="Descargar Copia de Seguridad" onclick="exportData()">💾</div>
+            <div style="font-size: 1.5rem; cursor: pointer;" title="Añadir Elemento" onclick="openItemModal()">➕</div>
+        </div>
     </div>
 
     <!-- ================= VISTA PRINCIPAL (DASHBOARD) ================= -->
@@ -373,14 +382,25 @@
         <div id="shelvesListContainer"></div>
     </div>
 
-    <!-- ================= VISTA: NOTAS Y AVISOS ================= -->
+    <!-- ================= VISTA: NOTAS Y AVISOS + GESTIÓN DE COPIAS ================= -->
     <div id="viewNotes" class="view-section">
         <button class="back-btn" onclick="switchView('viewHome', 'navHome')">← Volver al Panel</button>
+        
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
             <div class="card-title" style="text-align:left; margin:0;">📰 NOTAS Y AVISOS</div>
             <button class="btn-sm" style="background:var(--cyan-neon); color:black;" onclick="openNoteModal()">+ Nueva Nota</button>
         </div>
         <div id="notesContainer"></div>
+
+        <!-- Bloque de Copias de Seguridad -->
+        <div class="item-card" style="margin-top:24px; border-color:var(--cyan-neon);">
+            <div class="card-title" style="text-align:left; margin-bottom:10px;">💾 COPIAS DE SEGURIDAD</div>
+            <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:12px;">Guarda o restaura todo tu inventario en un archivo .json:</div>
+            <div style="display:flex; gap:10px;">
+                <button class="btn-sm" style="flex:1; background:rgba(56, 189, 248, 0.2); color:var(--cyan-neon); border-color:var(--cyan-neon);" onclick="exportData()">💾 Guardar Copia</button>
+                <button class="btn-sm" style="flex:1; background:rgba(168, 85, 247, 0.2); color:var(--purple-neon); border-color:var(--purple-neon);" onclick="importData()">📂 Cargar Copia</button>
+            </div>
+        </div>
     </div>
 
 </div>
@@ -709,6 +729,49 @@
             localStorage.setItem('trastero_notes_v3', JSON.stringify(notes));
             renderAllViews();
         }
+    }
+
+    function exportData() {
+        const dataToSave = {
+            inventory: inventory,
+            notes: notes
+        };
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dataToSave));
+        const anchor = document.createElement('a');
+        anchor.setAttribute("href", dataStr);
+        anchor.setAttribute("download", "trastero_backup_completo.json");
+        document.body.appendChild(anchor);
+        anchor.click();
+        anchor.remove();
+    }
+
+    function importData() {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'application/json';
+        input.onchange = e => {
+            const file = e.target.files[0];
+            const reader = new FileReader();
+            reader.readAsText(file, 'UTF-8');
+            reader.onload = readerEvent => {
+                try {
+                    const loadedData = JSON.parse(readerEvent.target.result);
+                    if (loadedData.inventory) {
+                        inventory = loadedData.inventory;
+                        notes = loadedData.notes || [];
+                    } else {
+                        inventory = loadedData;
+                    }
+                    localStorage.setItem('trastero_inventory_v3', JSON.stringify(inventory));
+                    localStorage.setItem('trastero_notes_v3', JSON.stringify(notes));
+                    renderAllViews();
+                    alert('¡Copia de seguridad cargada correctamente!');
+                } catch(err) {
+                    alert('El archivo seleccionado no es válido.');
+                }
+            }
+        }
+        input.click();
     }
 
     renderAllViews();
