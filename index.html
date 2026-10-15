@@ -223,7 +223,7 @@
             border-color: rgba(244, 63, 94, 0.3);
         }
 
-        /* Estilos específicos para la vista de baldas intuitiva */
+        /* Secciones internas de baldas y zonas */
         .shelf-section-box {
             background: rgba(168, 85, 247, 0.05);
             border: 1px dashed rgba(168, 85, 247, 0.3);
@@ -247,6 +247,16 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+        }
+        .section-separator {
+            font-size: 0.8rem;
+            color: var(--cyan-neon);
+            font-weight: 800;
+            letter-spacing: 1px;
+            margin: 24px 0 12px 0;
+            text-transform: uppercase;
+            border-bottom: 1px solid rgba(56, 189, 248, 0.2);
+            padding-bottom: 6px;
         }
 
         /* Bottom Nav Bar */
@@ -339,7 +349,7 @@
             <h1 class="greeting" id="timeGreeting">¡Buenas noches! 🌙</h1>
             <div class="status-badge">ESTADO: TRASTERO ORGANIZADO</div>
             <div class="brand">MI TRASTERO</div>
-            <div class="version">V2.1 INTUITIVE SHELVES</div>
+            <div class="version">V2.2 SEPARATED ZONES</div>
         </div>
         <div class="header-actions">
             <div style="font-size: 1.4rem; cursor: pointer;" title="Descargar Copia de Seguridad" onclick="exportData()">💾</div>
@@ -374,8 +384,8 @@
         <!-- Tarjeta de Baldas -->
         <div class="card-crystal" onclick="switchView('viewShelves', 'navShelves')">
             <div class="card-title">ESTRUCTURA FÍSICA</div>
-            <div style="text-align:center; font-size:1.2rem; font-weight:800; margin-top:6px;">🪜 Ver por Baldas (1 a 5)</div>
-            <div style="text-align:center; font-size:0.75rem; color:var(--text-muted); margin-top:4px;">Toca para abrir mapa de baldas ➔</div>
+            <div style="text-align:center; font-size:1.2rem; font-weight:800; margin-top:6px;">🪜 Baldas y Otras Zonas</div>
+            <div style="text-align:center; font-size:0.75rem; color:var(--text-muted); margin-top:4px;">Estantería, Colgadas y Suelo ➔</div>
         </div>
 
     </div>
@@ -401,10 +411,11 @@
         <div id="listLooseContainer"></div>
     </div>
 
-    <!-- ================= VISTA: POR BALDAS (INTUITIVA CON AMBAS SECCIONES) ================= -->
+    <!-- ================= VISTA: POR BALDAS Y ZONAS SEPARADAS ================= -->
     <div id="viewShelves" class="view-section">
         <button class="back-btn" onclick="switchView('viewHome', 'navHome')">← Volver al Panel</button>
-        <div class="card-title" style="text-align:left; margin-bottom:14px;">🪜 DISTRIBUCIÓN POR BALDAS</div>
+        <div class="card-title" style="text-align:left; margin-bottom:14px;">🪜 DISTRIBUCIÓN FÍSICA</div>
+        
         <div id="shelvesListContainer"></div>
     </div>
 
@@ -473,13 +484,13 @@
 
         <label style="font-size:0.8rem;">Ubicación exacta:</label>
         <select id="inputLoc" class="form-control">
-            <option value="Balda 1 (Inferior)">Balda 1 (Inferior - Suelo)</option>
+            <option value="Balda 1 (Inferior)">Balda 1 (Inferior)</option>
             <option value="Balda 2">Balda 2</option>
             <option value="Balda 3">Balda 3</option>
             <option value="Balda 4">Balda 4</option>
             <option value="Balda 5 (Superior)">Balda 5 (Superior)</option>
-            <option value="Bolsas Colgadas">Bolsas Colgadas</option>
-            <option value="Suelo / Hueco">Suelo / Hueco</option>
+            <option value="Bolsas Colgadas">Bolsas Colgadas (Otra zona)</option>
+            <option value="Suelo / Hueco">Suelo / Hueco (Otra zona)</option>
         </select>
 
         <label style="font-size:0.8rem;">Nombre del elemento:</label>
@@ -516,19 +527,22 @@
 <script>
     let inventory = JSON.parse(localStorage.getItem('trastero_inventory_v4')) || [
         { id: 1, type: "Caja", name: "Caja Herramientas", loc: "Balda 3", items: "Taladro, brocas, martillo", photo: "" },
-        { id: 2, type: "Objeto Suelto", name: "Aspirador de mano", loc: "Balda 3", items: "Cargador y boquillas", photo: "" }
+        { id: 2, type: "Objeto Suelto", name: "Aspirador de mano", loc: "Suelo / Hueco", items: "Cargador y boquillas", photo: "" }
     ];
 
     let notes = JSON.parse(localStorage.getItem('trastero_notes_v4')) || [
         { id: 1, title: "⚡ Nota de recordatorio", content: "Pendiente revisar cajas de Navidad en la Balda 5." }
     ];
 
-    const zones = [
+    const shelfZones = [
         "Balda 1 (Inferior)",
         "Balda 2",
         "Balda 3",
         "Balda 4",
-        "Balda 5 (Superior)",
+        "Balda 5 (Superior)"
+    ];
+
+    const otherZones = [
         "Bolsas Colgadas",
         "Suelo / Hueco"
     ];
@@ -615,74 +629,86 @@
         const container = document.getElementById('shelvesListContainer');
         container.innerHTML = '';
 
-        zones.forEach(zone => {
-            const zoneItems = inventory.filter(i => i.loc === zone);
-            const shelfBoxes = zoneItems.filter(i => i.type === 'Caja');
-            const shelfLoose = zoneItems.filter(i => i.type === 'Objeto Suelto');
+        // Título Bloque Estantería
+        const shelfHeader = document.createElement('div');
+        shelfHeader.className = 'section-separator';
+        shelfHeader.innerText = '🪜 Estantería Principal (Baldas)';
+        container.appendChild(shelfHeader);
 
-            const shelfDiv = document.createElement('div');
-            shelfDiv.className = 'item-card';
-
-            // Sección de Cajas en la balda
-            let boxesHtml = '';
-            if (shelfBoxes.length === 0) {
-                boxesHtml = `<div style="color:var(--text-muted); font-size:0.75rem; font-style:italic;">No hay cajas aquí</div>`;
-            } else {
-                boxesHtml = shelfBoxes.map(i => {
-                    const photoHtml = i.photo ? `<a href="${i.photo}" target="_blank" style="color:var(--cyan-neon); text-decoration:none; margin-left:6px; font-size:0.75rem;">🖼️ Foto</a>` : '';
-                    return `
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px; font-size:0.82rem; background:rgba(0,0,0,0.2); padding:6px 8px; border-radius:8px;">
-                        <span>📦 <b>${i.name}</b> <span style="color:var(--text-muted); font-size:0.75rem;">(${i.items || ''})</span> ${photoHtml}</span>
-                        <div>
-                            <button class="btn-sm" style="padding:2px 6px; font-size:0.65rem;" onclick="editItem(${i.id})">✏️</button>
-                        </div>
-                    </div>`;
-                }).join('');
-            }
-
-            // Sección de Objetos Sueltos en la balda
-            let looseHtml = '';
-            if (shelfLoose.length === 0) {
-                looseHtml = `<div style="color:var(--text-muted); font-size:0.75rem; font-style:italic;">No hay objetos sueltos aquí</div>`;
-            } else {
-                looseHtml = shelfLoose.map(i => {
-                    const photoHtml = i.photo ? `<a href="${i.photo}" target="_blank" style="color:var(--cyan-neon); text-decoration:none; margin-left:6px; font-size:0.75rem;">🖼️ Foto</a>` : '';
-                    return `
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px; font-size:0.82rem; background:rgba(0,0,0,0.2); padding:6px 8px; border-radius:8px;">
-                        <span>🏷️ <b>${i.name}</b> <span style="color:var(--text-muted); font-size:0.75rem;">(${i.items || ''})</span> ${photoHtml}</span>
-                        <div>
-                            <button class="btn-sm" style="padding:2px 6px; font-size:0.65rem;" onclick="editItem(${i.id})">✏️</button>
-                        </div>
-                    </div>`;
-                }).join('');
-            }
-
-            shelfDiv.innerHTML = `
-                <div class="item-header" style="margin-bottom:8px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:6px;">
-                    <span class="item-title" style="color:var(--cyan-neon); font-size:1.05rem;">🪜 ${zone}</span>
-                    <span class="badge-loc">${zoneItems.length} total</span>
-                </div>
-
-                <!-- Subsección Cajas -->
-                <div class="shelf-section-box">
-                    <div class="shelf-sub-title" style="color:var(--purple-neon);">
-                        <span>📦 Cajas (${shelfBoxes.length})</span>
-                        <span style="cursor:pointer; font-size:0.7rem; color:var(--cyan-neon);" onclick="quickAdd('${zone}', 'Caja')">+ Añadir caja</span>
-                    </div>
-                    ${boxesHtml}
-                </div>
-
-                <!-- Subsección Objetos Sueltos -->
-                <div class="shelf-section-loose">
-                    <div class="shelf-sub-title" style="color:var(--yellow-neon);">
-                        <span>🏷️ Objetos Sueltos (${shelfLoose.length})</span>
-                        <span style="cursor:pointer; font-size:0.7rem; color:var(--cyan-neon);" onclick="quickAdd('${zone}', 'Objeto Suelto')">+ Añadir suelto</span>
-                    </div>
-                    ${looseHtml}
-                </div>
-            `;
-            container.appendChild(shelfDiv);
+        shelfZones.forEach(zone => {
+            container.appendChild(createZoneCard(zone));
         });
+
+        // Título Bloque Otras Zonas
+        const otherHeader = document.createElement('div');
+        otherHeader.className = 'section-separator';
+        otherHeader.style.color = 'var(--yellow-neon)';
+        otherHeader.style.borderColor = 'rgba(250, 204, 21, 0.2)';
+        otherHeader.innerText = '📍 Otras Zonas (Bolsas y Suelo)';
+        container.appendChild(otherHeader);
+
+        otherZones.forEach(zone => {
+            container.appendChild(createZoneCard(zone));
+        });
+    }
+
+    function createZoneCard(zone) {
+        const zoneItems = inventory.filter(i => i.loc === zone);
+        const zoneBoxes = zoneItems.filter(i => i.type === 'Caja');
+        const zoneLoose = zoneItems.filter(i => i.type === 'Objeto Suelto');
+
+        const shelfDiv = document.createElement('div');
+        shelfDiv.className = 'item-card';
+
+        // Cajas
+        let boxesHtml = zoneBoxes.length === 0 
+            ? `<div style="color:var(--text-muted); font-size:0.75rem; font-style:italic;">No hay cajas aquí</div>` 
+            : zoneBoxes.map(i => {
+                const photoHtml = i.photo ? `<a href="${i.photo}" target="_blank" style="color:var(--cyan-neon); text-decoration:none; margin-left:6px; font-size:0.75rem;">🖼️ Foto</a>` : '';
+                return `
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px; font-size:0.82rem; background:rgba(0,0,0,0.2); padding:6px 8px; border-radius:8px;">
+                    <span>📦 <b>${i.name}</b> <span style="color:var(--text-muted); font-size:0.75rem;">(${i.items || ''})</span> ${photoHtml}</span>
+                    <button class="btn-sm" style="padding:2px 6px; font-size:0.65rem;" onclick="editItem(${i.id})">✏️</button>
+                </div>`;
+            }).join('');
+
+        // Sueltos
+        let looseHtml = zoneLoose.length === 0 
+            ? `<div style="color:var(--text-muted); font-size:0.75rem; font-style:italic;">No hay objetos sueltos aquí</div>` 
+            : zoneLoose.map(i => {
+                const photoHtml = i.photo ? `<a href="${i.photo}" target="_blank" style="color:var(--cyan-neon); text-decoration:none; margin-left:6px; font-size:0.75rem;">🖼️ Foto</a>` : '';
+                return `
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px; font-size:0.82rem; background:rgba(0,0,0,0.2); padding:6px 8px; border-radius:8px;">
+                    <span>🏷️ <b>${i.name}</b> <span style="color:var(--text-muted); font-size:0.75rem;">(${i.items || ''})</span> ${photoHtml}</span>
+                    <button class="btn-sm" style="padding:2px 6px; font-size:0.65rem;" onclick="editItem(${i.id})">✏️</button>
+                </div>`;
+            }).join('');
+
+        shelfDiv.innerHTML = `
+            <div class="item-header" style="margin-bottom:8px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:6px;">
+                <span class="item-title" style="color:var(--cyan-neon); font-size:1.05rem;">📍 ${zone}</span>
+                <span class="badge-loc">${zoneItems.length} total</span>
+            </div>
+
+            <!-- Subsección Cajas -->
+            <div class="shelf-section-box">
+                <div class="shelf-sub-title" style="color:var(--purple-neon);">
+                    <span>📦 Cajas (${zoneBoxes.length})</span>
+                    <span style="cursor:pointer; font-size:0.7rem; color:var(--cyan-neon);" onclick="quickAdd('${zone}', 'Caja')">+ Añadir caja</span>
+                </div>
+                ${boxesHtml}
+            </div>
+
+            <!-- Subsección Objetos Sueltos -->
+            <div class="shelf-section-loose">
+                <div class="shelf-sub-title" style="color:var(--yellow-neon);">
+                    <span>🏷️ Objetos Sueltos (${zoneLoose.length})</span>
+                    <span style="cursor:pointer; font-size:0.7rem; color:var(--cyan-neon);" onclick="quickAdd('${zone}', 'Objeto Suelto')">+ Añadir suelto</span>
+                </div>
+                ${looseHtml}
+            </div>
+        `;
+        return shelfDiv;
     }
 
     function renderNotesView() {
