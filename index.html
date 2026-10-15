@@ -223,6 +223,22 @@
             border-color: rgba(244, 63, 94, 0.3);
         }
 
+        /* Estilos intuitivos para mezcla en baldas */
+        .shelf-badges-container {
+            display: flex;
+            gap: 6px;
+            margin-top: 6px;
+            margin-bottom: 10px;
+        }
+        .shelf-type-badge {
+            font-size: 0.68rem;
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-weight: 700;
+        }
+        .badge-caja-type { background: rgba(168, 85, 247, 0.2); color: var(--purple-neon); border: 1px solid rgba(168, 85, 247, 0.3); }
+        .badge-suelto-type { background: rgba(250, 204, 21, 0.2); color: var(--yellow-neon); border: 1px solid rgba(250, 204, 21, 0.3); }
+
         /* Bottom Nav Bar */
         .navbar {
             position: fixed;
@@ -313,7 +329,7 @@
             <h1 class="greeting" id="timeGreeting">¡Buenas noches! 🌙</h1>
             <div class="status-badge">ESTADO: TRASTERO ORGANIZADO</div>
             <div class="brand">MI TRASTERO</div>
-            <div class="version">V1.8 CRYSTAL AUTO-TIME</div>
+            <div class="version">V1.9 INTUITIVE MIX</div>
         </div>
         <div class="header-actions">
             <div style="font-size: 1.4rem; cursor: pointer;" title="Descargar Copia de Seguridad" onclick="exportData()">💾</div>
@@ -375,7 +391,7 @@
         <div id="listLooseContainer"></div>
     </div>
 
-    <!-- ================= VISTA: POR BALDAS ================= -->
+    <!-- ================= VISTA: POR BALDAS (INTUITIVA) ================= -->
     <div id="viewShelves" class="view-section">
         <button class="back-btn" onclick="switchView('viewHome', 'navHome')">← Volver al Panel</button>
         <div class="card-title" style="text-align:left; margin-bottom:14px;">🪜 DISTRIBUCIÓN POR BALDAS</div>
@@ -433,7 +449,7 @@
     </div>
 </div>
 
-<!-- Modal Elementos (Añadir / Editar con Enlace a Foto) -->
+<!-- Modal Elementos -->
 <div id="itemModal" class="modal">
     <div class="modal-content">
         <h3 id="modalTitle" style="margin-top:0; color:var(--cyan-neon);">Añadir al Trastero</h3>
@@ -457,7 +473,7 @@
         </select>
 
         <label style="font-size:0.8rem;">Nombre del elemento:</label>
-        <input type="text" id="inputName" class="form-control" placeholder="Ej. Caja Herramientas">
+        <input type="text" id="inputName" class="form-control" placeholder="Ej. Caja Herramientas o Casco">
 
         <label style="font-size:0.8rem;">Contenido / Detalle:</label>
         <input type="text" id="inputItems" class="form-control" placeholder="Ej. Taladro, brocas, martillo">
@@ -564,10 +580,14 @@
             card.className = 'item-card';
             
             const photoBtn = item.photo ? `<a href="${item.photo}" target="_blank" class="photo-link">🖼️ Ver Foto Contenido</a>` : '';
+            const typeBadge = item.type === 'Caja' ? '<span class="shelf-type-badge badge-caja-type">📦 Caja</span>' : '<span class="shelf-type-badge badge-suelto-type">🏷️ Suelto</span>';
 
             card.innerHTML = `
                 <div class="item-header">
-                    <span class="item-title">${item.name}</span>
+                    <div>
+                        <span class="item-title">${item.name}</span>
+                        <div style="margin-top:4px;">${typeBadge}</div>
+                    </div>
                     <span class="badge-loc">📍 ${item.loc}</span>
                 </div>
                 <div class="item-items">${item.items || 'Sin detalles'}</div>
@@ -590,22 +610,36 @@
             const shelfDiv = document.createElement('div');
             shelfDiv.className = 'item-card';
             
+            // Comprobar si hay mezcla de cajas y objetos sueltos de un vistazo intuitivo
+            const hasCajas = zoneItems.some(i => i.type === 'Caja');
+            const hasSueltos = zoneItems.some(i => i.type === 'Objeto Suelto');
+
+            let mixBadgesHtml = '';
+            if (zoneItems.length > 0) {
+                let badges = [];
+                if (hasCajas) badges.push('<span class="shelf-type-badge badge-caja-type">📦 Contiene Cajas</span>');
+                if (hasSueltos) badges.push('<span class="shelf-type-badge badge-suelto-type">🏷️ Contiene Sueltos</span>');
+                mixBadgesHtml = `<div class="shelf-badges-container">${badges.join('')}</div>`;
+            }
+
             let itemsHtml = zoneItems.length === 0 
-                ? `<div style="color:var(--text-muted); font-size:0.75rem;">Vacía</div>` 
+                ? `<div style="color:var(--text-muted); font-size:0.75rem;">Vacía (sin elementos)</div>` 
                 : zoneItems.map(i => {
                     const photoHtml = i.photo ? `<a href="${i.photo}" target="_blank" style="color:var(--cyan-neon); text-decoration:none; margin-left:6px;">🖼️ Foto</a>` : '';
+                    const iconType = i.type === 'Caja' ? '📦' : '🏷️';
                     return `
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px; font-size:0.85rem;">
-                        <span>• <b>${i.name}</b> (${i.items || ''}) ${photoHtml}</span>
-                        <span style="font-size:0.7rem; color:var(--cyan-neon); cursor:pointer;" onclick="editItem(${i.id})">✏️</span>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; padding-top:6px; border-top:1px solid rgba(255,255,255,0.04); font-size:0.85rem;">
+                        <span>${iconType} <b>${i.name}</b> <span style="color:var(--text-muted); font-size:0.75rem;">(${i.items || ''})</span> ${photoHtml}</span>
+                        <button class="btn-sm" style="padding:2px 8px; font-size:0.7rem;" onclick="editItem(${i.id})">✏️</button>
                     </div>`;
                 }).join('');
 
             shelfDiv.innerHTML = `
-                <div class="item-header">
+                <div class="item-header" style="margin-bottom:4px;">
                     <span class="item-title" style="color:var(--cyan-neon);">🪜 ${zone}</span>
                     <span class="badge-loc">${zoneItems.length} items</span>
                 </div>
+                ${mixBadgesHtml}
                 <div style="margin-top:6px;">${itemsHtml}</div>
             `;
             container.appendChild(shelfDiv);
