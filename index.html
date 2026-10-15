@@ -223,21 +223,31 @@
             border-color: rgba(244, 63, 94, 0.3);
         }
 
-        /* Estilos intuitivos para mezcla en baldas */
-        .shelf-badges-container {
+        /* Estilos específicos para la vista de baldas intuitiva */
+        .shelf-section-box {
+            background: rgba(168, 85, 247, 0.05);
+            border: 1px dashed rgba(168, 85, 247, 0.3);
+            border-radius: 10px;
+            padding: 10px;
+            margin-top: 8px;
+        }
+        .shelf-section-loose {
+            background: rgba(250, 204, 21, 0.05);
+            border: 1px dashed rgba(250, 204, 21, 0.3);
+            border-radius: 10px;
+            padding: 10px;
+            margin-top: 8px;
+        }
+        .shelf-sub-title {
+            font-size: 0.75rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
             display: flex;
-            gap: 6px;
-            margin-top: 6px;
-            margin-bottom: 10px;
+            justify-content: space-between;
+            align-items: center;
         }
-        .shelf-type-badge {
-            font-size: 0.68rem;
-            padding: 2px 8px;
-            border-radius: 6px;
-            font-weight: 700;
-        }
-        .badge-caja-type { background: rgba(168, 85, 247, 0.2); color: var(--purple-neon); border: 1px solid rgba(168, 85, 247, 0.3); }
-        .badge-suelto-type { background: rgba(250, 204, 21, 0.2); color: var(--yellow-neon); border: 1px solid rgba(250, 204, 21, 0.3); }
 
         /* Bottom Nav Bar */
         .navbar {
@@ -329,7 +339,7 @@
             <h1 class="greeting" id="timeGreeting">¡Buenas noches! 🌙</h1>
             <div class="status-badge">ESTADO: TRASTERO ORGANIZADO</div>
             <div class="brand">MI TRASTERO</div>
-            <div class="version">V2.0 MULTI-ITEM SHELF</div>
+            <div class="version">V2.1 INTUITIVE SHELVES</div>
         </div>
         <div class="header-actions">
             <div style="font-size: 1.4rem; cursor: pointer;" title="Descargar Copia de Seguridad" onclick="exportData()">💾</div>
@@ -391,7 +401,7 @@
         <div id="listLooseContainer"></div>
     </div>
 
-    <!-- ================= VISTA: POR BALDAS (INTUITIVA) ================= -->
+    <!-- ================= VISTA: POR BALDAS (INTUITIVA CON AMBAS SECCIONES) ================= -->
     <div id="viewShelves" class="view-section">
         <button class="back-btn" onclick="switchView('viewHome', 'navHome')">← Volver al Panel</button>
         <div class="card-title" style="text-align:left; margin-bottom:14px;">🪜 DISTRIBUCIÓN POR BALDAS</div>
@@ -504,12 +514,12 @@
 </div>
 
 <script>
-    let inventory = JSON.parse(localStorage.getItem('trastero_inventory_v3')) || [
+    let inventory = JSON.parse(localStorage.getItem('trastero_inventory_v4')) || [
         { id: 1, type: "Caja", name: "Caja Herramientas", loc: "Balda 3", items: "Taladro, brocas, martillo", photo: "" },
-        { id: 2, type: "Objeto Suelto", name: "Aspirador de mano", loc: "Balda 2", items: "Cargador y boquillas", photo: "" }
+        { id: 2, type: "Objeto Suelto", name: "Aspirador de mano", loc: "Balda 3", items: "Cargador y boquillas", photo: "" }
     ];
 
-    let notes = JSON.parse(localStorage.getItem('trastero_notes_v3')) || [
+    let notes = JSON.parse(localStorage.getItem('trastero_notes_v4')) || [
         { id: 1, title: "⚡ Nota de recordatorio", content: "Pendiente revisar cajas de Navidad en la Balda 5." }
     ];
 
@@ -580,7 +590,7 @@
             card.className = 'item-card';
             
             const photoBtn = item.photo ? `<a href="${item.photo}" target="_blank" class="photo-link">🖼️ Ver Foto Contenido</a>` : '';
-            const typeBadge = item.type === 'Caja' ? '<span class="shelf-type-badge badge-caja-type">📦 Caja</span>' : '<span class="shelf-type-badge badge-suelto-type">🏷️ Suelto</span>';
+            const typeBadge = item.type === 'Caja' ? '<span style="background:rgba(168,85,247,0.2); color:var(--purple-neon); padding:2px 8px; border-radius:6px; font-size:0.7rem; font-weight:700;">📦 Caja</span>' : '<span style="background:rgba(250,204,21,0.2); color:var(--yellow-neon); padding:2px 8px; border-radius:6px; font-size:0.7rem; font-weight:700;">🏷️ Suelto</span>';
 
             card.innerHTML = `
                 <div class="item-header">
@@ -607,39 +617,69 @@
 
         zones.forEach(zone => {
             const zoneItems = inventory.filter(i => i.loc === zone);
+            const shelfBoxes = zoneItems.filter(i => i.type === 'Caja');
+            const shelfLoose = zoneItems.filter(i => i.type === 'Objeto Suelto');
+
             const shelfDiv = document.createElement('div');
             shelfDiv.className = 'item-card';
-            
-            const hasCajas = zoneItems.some(i => i.type === 'Caja');
-            const hasSueltos = zoneItems.some(i => i.type === 'Objeto Suelto');
 
-            let mixBadgesHtml = '';
-            if (zoneItems.length > 0) {
-                let badges = [];
-                if (hasCajas) badges.push('<span class="shelf-type-badge badge-caja-type">📦 Contiene Cajas</span>');
-                if (hasSueltos) badges.push('<span class="shelf-type-badge badge-suelto-type">🏷️ Contiene Sueltos</span>');
-                mixBadgesHtml = `<div class="shelf-badges-container">${badges.join('')}</div>`;
-            }
-
-            let itemsHtml = zoneItems.length === 0 
-                ? `<div style="color:var(--text-muted); font-size:0.75rem;">Vacía (sin elementos)</div>` 
-                : zoneItems.map(i => {
-                    const photoHtml = i.photo ? `<a href="${i.photo}" target="_blank" style="color:var(--cyan-neon); text-decoration:none; margin-left:6px;">🖼️ Foto</a>` : '';
-                    const iconType = i.type === 'Caja' ? '📦' : '🏷️';
+            // Sección de Cajas en la balda
+            let boxesHtml = '';
+            if (shelfBoxes.length === 0) {
+                boxesHtml = `<div style="color:var(--text-muted); font-size:0.75rem; font-style:italic;">No hay cajas aquí</div>`;
+            } else {
+                boxesHtml = shelfBoxes.map(i => {
+                    const photoHtml = i.photo ? `<a href="${i.photo}" target="_blank" style="color:var(--cyan-neon); text-decoration:none; margin-left:6px; font-size:0.75rem;">🖼️ Foto</a>` : '';
                     return `
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; padding-top:6px; border-top:1px solid rgba(255,255,255,0.04); font-size:0.85rem;">
-                        <span>${iconType} <b>${i.name}</b> <span style="color:var(--text-muted); font-size:0.75rem;">(${i.items || ''})</span> ${photoHtml}</span>
-                        <button class="btn-sm" style="padding:2px 8px; font-size:0.7rem;" onclick="editItem(${i.id})">✏️</button>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px; font-size:0.82rem; background:rgba(0,0,0,0.2); padding:6px 8px; border-radius:8px;">
+                        <span>📦 <b>${i.name}</b> <span style="color:var(--text-muted); font-size:0.75rem;">(${i.items || ''})</span> ${photoHtml}</span>
+                        <div>
+                            <button class="btn-sm" style="padding:2px 6px; font-size:0.65rem;" onclick="editItem(${i.id})">✏️</button>
+                        </div>
                     </div>`;
                 }).join('');
+            }
+
+            // Sección de Objetos Sueltos en la balda
+            let looseHtml = '';
+            if (shelfLoose.length === 0) {
+                looseHtml = `<div style="color:var(--text-muted); font-size:0.75rem; font-style:italic;">No hay objetos sueltos aquí</div>`;
+            } else {
+                looseHtml = shelfLoose.map(i => {
+                    const photoHtml = i.photo ? `<a href="${i.photo}" target="_blank" style="color:var(--cyan-neon); text-decoration:none; margin-left:6px; font-size:0.75rem;">🖼️ Foto</a>` : '';
+                    return `
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px; font-size:0.82rem; background:rgba(0,0,0,0.2); padding:6px 8px; border-radius:8px;">
+                        <span>🏷️ <b>${i.name}</b> <span style="color:var(--text-muted); font-size:0.75rem;">(${i.items || ''})</span> ${photoHtml}</span>
+                        <div>
+                            <button class="btn-sm" style="padding:2px 6px; font-size:0.65rem;" onclick="editItem(${i.id})">✏️</button>
+                        </div>
+                    </div>`;
+                }).join('');
+            }
 
             shelfDiv.innerHTML = `
-                <div class="item-header" style="margin-bottom:4px;">
-                    <span class="item-title" style="color:var(--cyan-neon);">🪜 ${zone}</span>
-                    <span class="badge-loc">${zoneItems.length} items</span>
+                <div class="item-header" style="margin-bottom:8px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:6px;">
+                    <span class="item-title" style="color:var(--cyan-neon); font-size:1.05rem;">🪜 ${zone}</span>
+                    <span class="badge-loc">${zoneItems.length} total</span>
                 </div>
-                ${mixBadgesHtml}
-                <div style="margin-top:6px;">${itemsHtml}</div>
+
+                <!-- Subsección Cajas -->
+                <div class="shelf-section-box">
+                    <div class="shelf-sub-title" style="color:var(--purple-neon);">
+                        <span>📦 Cajas (${shelfBoxes.length})</span>
+                        <span style="cursor:pointer; font-size:0.7rem; color:var(--cyan-neon);" onclick="quickAdd('${zone}', 'Caja')">+ Añadir caja</span>
+                    </div>
+                    ${boxesHtml}
+                </div>
+
+                <!-- Subsección Objetos Sueltos -->
+                <div class="shelf-section-loose">
+                    <div class="shelf-sub-title" style="color:var(--yellow-neon);">
+                        <span>🏷️ Objetos Sueltos (${shelfLoose.length})</span>
+                        <span style="cursor:pointer; font-size:0.7rem; color:var(--cyan-neon);" onclick="quickAdd('${zone}', 'Objeto Suelto')">+ Añadir suelto</span>
+                    </div>
+                    ${looseHtml}
+                </div>
             `;
             container.appendChild(shelfDiv);
         });
@@ -671,7 +711,7 @@
         });
     }
 
-    function openItemModal(id = null) {
+    function openItemModal(id = null, defaultLoc = null, defaultType = null) {
         document.getElementById('itemModal').style.display = 'flex';
         if (id) {
             const item = inventory.find(i => i.id === id);
@@ -688,7 +728,13 @@
             document.getElementById('inputName').value = '';
             document.getElementById('inputItems').value = '';
             document.getElementById('inputPhoto').value = '';
+            if (defaultLoc) document.getElementById('inputLoc').value = defaultLoc;
+            if (defaultType) document.getElementById('inputType').value = defaultType;
         }
+    }
+
+    function quickAdd(loc, type) {
+        openItemModal(null, loc, type);
     }
 
     function openNoteModal(id = null) {
@@ -732,7 +778,7 @@
             inventory.unshift({ id: Date.now(), type, loc, name, items, photo });
         }
 
-        localStorage.setItem('trastero_inventory_v3', JSON.stringify(inventory));
+        localStorage.setItem('trastero_inventory_v4', JSON.stringify(inventory));
         renderAllViews();
         closeModal('itemModal');
     }
@@ -742,7 +788,7 @@
     function deleteItem(id) {
         if(confirm('¿Seguro que quieres borrar este elemento?')) {
             inventory = inventory.filter(i => i.id !== id);
-            localStorage.setItem('trastero_inventory_v3', JSON.stringify(inventory));
+            localStorage.setItem('trastero_inventory_v4', JSON.stringify(inventory));
             renderAllViews();
         }
     }
@@ -762,7 +808,7 @@
             notes.unshift({ id: Date.now(), title, content });
         }
 
-        localStorage.setItem('trastero_notes_v3', JSON.stringify(notes));
+        localStorage.setItem('trastero_notes_v4', JSON.stringify(notes));
         renderAllViews();
         closeModal('noteModal');
     }
@@ -772,7 +818,7 @@
     function deleteNote(id) {
         if(confirm('¿Seguro que quieres borrar esta nota?')) {
             notes = notes.filter(n => n.id !== id);
-            localStorage.setItem('trastero_notes_v3', JSON.stringify(notes));
+            localStorage.setItem('trastero_notes_v4', JSON.stringify(notes));
             renderAllViews();
         }
     }
@@ -808,8 +854,8 @@
                     } else {
                         inventory = loadedData;
                     }
-                    localStorage.setItem('trastero_inventory_v3', JSON.stringify(inventory));
-                    localStorage.setItem('trastero_notes_v3', JSON.stringify(notes));
+                    localStorage.setItem('trastero_inventory_v4', JSON.stringify(inventory));
+                    localStorage.setItem('trastero_notes_v4', JSON.stringify(notes));
                     renderAllViews();
                     alert('¡Copia de seguridad cargada correctamente!');
                 } catch(err) {
