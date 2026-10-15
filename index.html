@@ -329,7 +329,7 @@
             <h1 class="greeting" id="timeGreeting">¡Buenas noches! 🌙</h1>
             <div class="status-badge">ESTADO: TRASTERO ORGANIZADO</div>
             <div class="brand">MI TRASTERO</div>
-            <div class="version">V1.9 INTUITIVE MIX</div>
+            <div class="version">V2.0 MULTI-ITEM SHELF</div>
         </div>
         <div class="header-actions">
             <div style="font-size: 1.4rem; cursor: pointer;" title="Descargar Copia de Seguridad" onclick="exportData()">💾</div>
@@ -610,7 +610,6 @@
             const shelfDiv = document.createElement('div');
             shelfDiv.className = 'item-card';
             
-            // Comprobar si hay mezcla de cajas y objetos sueltos de un vistazo intuitivo
             const hasCajas = zoneItems.some(i => i.type === 'Caja');
             const hasSueltos = zoneItems.some(i => i.type === 'Objeto Suelto');
 
